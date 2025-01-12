@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Calendar</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        header {
+            background-color: #0078D4;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            width: 100%;
+        }
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            max-width: 800px;
+            margin: 20px auto;
+        }
+        .day {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .day:hover {
+            background-color: #f0f0f0;
+        }
+        .day header {
+            font-weight: bold;
+        }
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            display: none;
+            z-index: 10;
+        }
+        .modal.active {
+            display: block;
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 9;
+        }
+        .overlay.active {
+            display: block;
+        }
+        .modal input, .modal select {
+            display: block;
+            margin: 10px 0;
+            width: 100%;
+            padding: 5px;
+        }
+        .modal button {
+            padding: 10px 15px;
+            background-color: #0078D4;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .modal button:hover {
+            background-color: #005fa3;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Interactive Calendar</h1>
+        <button onclick="prevMonth()">Previous Month</button>
+        <span id="month-year"></span>
+        <button onclick="nextMonth()">Next Month</button>
+    </header>
+    <div class="calendar" id="calendar"></div>
+
+    <div class="overlay" id="overlay"></div>
+    <div class="modal" id="modal">
+        <h2>Schedule an Appointment</h2>
+        <input type="text" id="personName" placeholder="Person's Name">
+        <input type="time" id="appointmentTime">
+        <select id="appointmentType">
+            <option value="basic">Basic</option>
+            <option value="premium">Premium</option>
+            <option value="vip">VIP</option>
+        </select>
+        <button onclick="saveAppointment()">Save</button>
+        <button onclick="closeModal()">Cancel</button>
+    </div>
+
+    <script>
+        const calendarEl = document.getElementById("calendar");
+        const modalEl = document.getElementById("modal");
+        const overlayEl = document.getElementById("overlay");
+        const monthYearEl = document.getElementById("month-year");
+
+        let currentDate = new Date();
+        const appointments = JSON.parse(localStorage.getItem("appointments")) || {};
+
+        function renderCalendar() {
+            calendarEl.innerHTML = "";
+            monthYearEl.textContent = `${currentDate.toLocaleString('default', { month: 'long' })} ${currentDate.getFullYear()}`;
+
+            const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
+            const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+
+            for (let i = 0; i < firstDay; i++) {
+                const emptyCell = document.createElement("div");
+                calendarEl.appendChild(emptyCell);
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayCell = document.createElement("div");
+                dayCell.classList.add("day");
+                dayCell.innerHTML = `<header>${day}</header>`;
+
+                dayCell.onclick = () => openModal(day);
+                calendarEl.appendChild(dayCell);
+            }
+        }
+
+        function openModal(day) {
+            modalEl.dataset.selectedDay = day;
+            modalEl.dataset.selectedMonth = currentDate.getMonth();
+            modalEl.dataset.selectedYear = currentDate.getFullYear();
+            modalEl.classList.add("active");
+            overlayEl.classList.add("active");
+        }
+
+        function closeModal() {
+            modalEl.classList.remove("active");
+            overlayEl.classList.remove("active");
+        }
+
+        function saveAppointment() {
+            const personName = document.getElementById("personName").value;
+            const appointmentTime = document.getElementById("appointmentTime").value;
+            const appointmentType = document.getElementById("appointmentType").value;
+
+            const { selectedDay, selectedMonth, selectedYear } = modalEl.dataset;
+
+            const key = `${selectedYear}-${selectedMonth}-${selectedDay}`;
+            appointments[key] = { personName, appointmentTime, appointmentType };
+            localStorage.setItem("appointments", JSON.stringify(appointments));
+
+            closeModal();
+        }
+
+        function prevMonth() {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar();
+        }
+
+        function nextMonth() {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar();
+        }
+
+        renderCalendar();
+    </script>
+</body>
+</html>
