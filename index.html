@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Calendar</title>
+    <title>Interactive Calendar (Dark Theme)</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -12,18 +12,19 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            background-color: #63666A;
+            background-color: #121212;
+            color: #e0e0e0;
         }
         header {
-            background-color: #D7D2CB;
-            color: white;
+            background-color: #1f1f1f;
+            color: #e0e0e0;
             padding: 15px 20px;
             text-align: center;
             width: 100%;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
         }
         header h1 {
             margin: 0;
@@ -31,16 +32,15 @@
         }
         header button {
             padding: 10px 20px;
-            background-color: white;
-            color: #0078D4;
-            border: 1px solid #0078D4;
+            background-color: #272727;
+            color: #e0e0e0;
+            border: 1px solid #424242;
             border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
         }
         header button:hover {
-            background-color: #005fa3;
-            color: white;
+            background-color: #424242;
         }
         .calendar {
             display: grid;
@@ -48,17 +48,17 @@
             gap: 5px;
             max-width: 800px;
             margin: 20px auto;
-            background-color: white;
+            background-color: #1f1f1f;
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
         }
         .day {
-            border: 1px solid #ccc;
+            border: 1px solid #333;
             padding: 15px;
             text-align: center;
             cursor: pointer;
-            background-color: #f9f9f9;
+            background-color: #1a1a1a;
             border-radius: 5px;
             position: relative;
         }
@@ -67,22 +67,34 @@
             margin-bottom: 10px;
         }
         .day:hover {
-            background-color: #e8f0ff;
+            background-color: #333333;
         }
         .appointment-info {
             margin-top: 10px;
             font-size: 12px;
-            color: #555;
+            color: #bdbdbd;
+        }
+        .delete-btn {
+            background-color: #d32f2f;
+            color: white;
+            border: none;
+            padding: 2px 6px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+        .delete-btn:hover {
+            background-color: #b71c1c;
         }
         .modal {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: white;
+            background: #1f1f1f;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
             display: none;
             z-index: 10;
         }
@@ -95,7 +107,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.7);
             display: none;
             z-index: 9;
         }
@@ -108,7 +120,9 @@
             width: 100%;
             padding: 10px;
             font-size: 16px;
-            border: 1px solid #ccc;
+            background-color: #333;
+            color: #e0e0e0;
+            border: 1px solid #424242;
             border-radius: 5px;
         }
         .modal button {
@@ -177,7 +191,15 @@
 
                 const key = `${currentDate.getFullYear()}-${currentDate.getMonth()}-${day}`;
                 if (appointments[key]) {
-                    dayCell.innerHTML += `<div class="appointment-info">${appointments[key].personName} (${appointments[key].appointmentType})</div>`;
+                    appointments[key].forEach((appointment, index) => {
+                        const appointmentInfo = document.createElement("div");
+                        appointmentInfo.classList.add("appointment-info");
+                        appointmentInfo.innerHTML = `
+                            ${appointment.personName} (${appointment.appointmentType}) 
+                            <button class="delete-btn" onclick="deleteAppointment('${key}', ${index})">X</button>
+                        `;
+                        dayCell.appendChild(appointmentInfo);
+                    });
                 }
 
                 dayCell.onclick = () => openModal(day);
@@ -191,17 +213,6 @@
             modalEl.dataset.selectedYear = currentDate.getFullYear();
             modalEl.classList.add("active");
             overlayEl.classList.add("active");
-
-            const key = `${modalEl.dataset.selectedYear}-${modalEl.dataset.selectedMonth}-${modalEl.dataset.selectedDay}`;
-            if (appointments[key]) {
-                document.getElementById("personName").value = appointments[key].personName;
-                document.getElementById("appointmentTime").value = appointments[key].appointmentTime;
-                document.getElementById("appointmentType").value = appointments[key].appointmentType;
-            } else {
-                document.getElementById("personName").value = "";
-                document.getElementById("appointmentTime").value = "";
-                document.getElementById("appointmentType").value = "basic";
-            }
         }
 
         function closeModal() {
@@ -214,14 +225,27 @@
             const appointmentTime = document.getElementById("appointmentTime").value;
             const appointmentType = document.getElementById("appointmentType").value;
 
+            if (!personName || !appointmentTime) {
+                alert("Please fill out all fields.");
+                return;
+            }
+
             const { selectedDay, selectedMonth, selectedYear } = modalEl.dataset;
 
             const key = `${selectedYear}-${selectedMonth}-${selectedDay}`;
-            appointments[key] = { personName, appointmentTime, appointmentType };
+            if (!appointments[key]) appointments[key] = [];
+            appointments[key].push({ personName, appointmentTime, appointmentType });
             localStorage.setItem("appointments", JSON.stringify(appointments));
 
             renderCalendar();
             closeModal();
+        }
+
+        function deleteAppointment(key, index) {
+            appointments[key].splice(index, 1);
+            if (appointments[key].length === 0) delete appointments[key];
+            localStorage.setItem("appointments", JSON.stringify(appointments));
+            renderCalendar();
         }
 
         function prevMonth() {
@@ -234,10 +258,12 @@
             renderCalendar();
         }
 
-        saveBtn.addEventListener("click", saveAppointment);
-        cancelBtn.addEventListener("click", closeModal);
+        saveBtn.onclick = saveAppointment;
+        cancelBtn.onclick = closeModal;
+        overlayEl.onclick = closeModal;
 
         renderCalendar();
     </script>
 </body>
 </html>
+``
