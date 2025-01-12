@@ -1,7 +1,41 @@
-    function nextMonth() {
-        currentDate.setMonth(currentDate.getMonth() + 1);
-        renderCalendar();
-    }
-
-    renderCalendar();
-</script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bike Wash Calendar</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bike Wash Calendar</h1>
+        </header>
+        <main>
+            <div class="calendar">
+                <div id="calendarGrid"></div>
+            </div>
+            <div class="appointment-form">
+                <h2>Book an Appointment</h2>
+                <form id="appointmentForm">
+                    <label for="name">Name:</label>
+                    <input type="text" id="name" required>
+                    
+                    <label for="time">Time:</label>
+                    <input type="time" id="time" required>
+                    
+                    <label for="service">Service:</label>
+                    <select id="service" required>
+                        <option value="basic">Basic</option>
+                        <option value="intermediate">Intermediate</option>
+                        <option value="extreme">Extreme</option>
+                    </select>
+                    
+                    <button type="submit" class="btn">Save Appointment</button>
+                </form>
+            </div>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
