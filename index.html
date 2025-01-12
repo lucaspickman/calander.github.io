@@ -143,8 +143,8 @@
             <option value="premium">Premium</option>
             <option value="vip">VIP</option>
         </select>
-        <button onclick="saveAppointment()">Save</button>
-        <button onclick="closeModal()">Cancel</button>
+        <button id="saveBtn">Save</button>
+        <button id="cancelBtn">Cancel</button>
     </div>
 
     <script>
@@ -152,6 +152,8 @@
         const modalEl = document.getElementById("modal");
         const overlayEl = document.getElementById("overlay");
         const monthYearEl = document.getElementById("month-year");
+        const saveBtn = document.getElementById("saveBtn");
+        const cancelBtn = document.getElementById("cancelBtn");
 
         let currentDate = new Date();
         const appointments = JSON.parse(localStorage.getItem("appointments")) || {};
@@ -219,4 +221,23 @@
             localStorage.setItem("appointments", JSON.stringify(appointments));
 
             renderCalendar();
-           
+            closeModal();
+        }
+
+        function prevMonth() {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar();
+        }
+
+        function nextMonth() {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar();
+        }
+
+        saveBtn.addEventListener("click", saveAppointment);
+        cancelBtn.addEventListener("click", closeModal);
+
+        renderCalendar();
+    </script>
+</body>
+</html>
